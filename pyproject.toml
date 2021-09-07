@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dvrmanager"
+version = "1.0"
+description = "Quickly download video files from sd cards"
+authors = ["Alexander Gorokhov"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.8.2"
+PyQt6 = "^6.1.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pyinstaller = "^4.5.1"
+poetry = "^1.1.8"
+invoke = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
