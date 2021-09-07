@@ -4,6 +4,8 @@ Logging configuration
 import logging
 import logging.config
 
+from PyQt6.QtWidgets import QStatusBar
+
 from dvrmanager import config
 
 
@@ -54,3 +56,21 @@ LOGGING_CONFIG = {
         'level': 'ERROR'
     },
 }
+
+
+class StatusBarHandler(logging.StreamHandler):
+    def __init__(self, status_bar: QStatusBar):
+        self._status_bar = status_bar
+
+        super(StatusBarHandler, self).__init__()
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            msg = self.format(record)
+            self._status_bar.clearMessage()
+            self._status_bar.showMessage(msg, 5000)
+            self.flush()
+        except RecursionError:
+            raise
+        except Exception:
+            self.handleError(record)
