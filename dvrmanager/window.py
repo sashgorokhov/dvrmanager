@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from PyQt6 import QtCore
+from PyQt6.QtCore import QThread, QThreadPool, QTimer
 from PyQt6.QtWidgets import QMainWindow, QApplication, QWidget, QLineEdit, QCheckBox
 
 from dvrmanager import logs
@@ -73,6 +74,19 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.setupUi()
         self.load_settings_export_items()
         self.setup_statusbar_logging()
+        self.setup_threads()
+
+        self._drive_scan_timer = QTimer(self)
+        self._drive_scan_timer.timeout.connect(self.scan_drives)
+        self._drive_scan_timer.start(1000)
+
+    @QtCore.pyqtSlot()
+    def scan_drives(self):
+        pass
+
+    def setup_threads(self):
+        self._thread_pool = QThreadPool.globalInstance()
+        logger.debug(f'Thread pool size: {QThread.idealThreadCount()}')
 
     def load_settings_export_items(self):
         for export_item in self._settings.export_items:
@@ -88,6 +102,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.target_directory_edit.setText(str(self._settings.target_directory))
         self.target_directory_edit.textChanged.connect(self._link_text_setting('target_directory', Path))
 
+    @QtCore.pyqtSlot(str)
+    def add_ui_log_entry(self, text):
+        self.log_list_widget.insertItem(0, text)
+
     def _link_text_setting(self, key: str, ttype: type = str):
         def slot(value):
             setattr(self._settings, key, ttype(value))
@@ -97,6 +115,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def on_settings_changed(self):
         logger.info('Settings saved')
+        logger.debug(self._settings.json())
         self._settings.save()
 
     def add_new_export_item(self):
@@ -125,6 +144,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
     def closeEvent(self, *args, **kwargs):
         """Terminate application if main window closed"""
         self._app.quit()
+        self._thread_pool.waitForDone()
 
     def setup_statusbar_logging(self):
         logger = logging.getLogger('dvrmanager')
