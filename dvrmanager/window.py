@@ -1,11 +1,13 @@
 import logging
 from pathlib import Path
+from typing import Dict
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import QThread, QThreadPool, QTimer
 from PyQt6.QtWidgets import QMainWindow, QApplication, QWidget, QLineEdit, QCheckBox
 
 from dvrmanager import logs
+from dvrmanager.fs import get_fs_manager
 from dvrmanager.settings import Settings, ExportItem
 from dvrmanager.ui.export_item_widget import Ui_Form
 from dvrmanager.ui.window import Ui_MainWindow
@@ -64,10 +66,14 @@ class ExportItemWidget(Ui_Form, QWidget):
 
 class MainWindow(Ui_MainWindow, QMainWindow):
     settings_changed = QtCore.pyqtSignal()
+    drive_attached = QtCore.pyqtSignal(str)
+    drive_detached = QtCore.pyqtSignal(str)
 
     def __init__(self, app: QApplication, settings: Settings):
         self._app = app
         self._settings = settings
+        self._fs = get_fs_manager()
+        logger.debug(f'Using {self._fs.__class__.__name__}')
 
         super(MainWindow, self).__init__()
 
@@ -80,9 +86,24 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self._drive_scan_timer.timeout.connect(self.scan_drives)
         self._drive_scan_timer.start(1000)
 
-    @QtCore.pyqtSlot()
+        self._drive_state: Dict[str, bool] = {}
+
     def scan_drives(self):
-        pass
+        new_state = {}
+        for export_item in self._settings.export_items:
+            if not export_item.automatic:
+                continue
+            new_state[export_item.drive_name] = self._fs.drive_exists(export_item.drive_name)
+
+        for drive, attached in new_state.items():
+            if attached and not self._drive_state.get(drive, False):
+                self.drive_attached.emit(drive)
+                self.add_ui_log_entry(f'Drive attached: {drive}')
+            elif not attached and self._drive_state.get(drive, False):
+                self.drive_detached.emit(drive)
+                self.add_ui_log_entry(f'Drive detached: {drive}')
+
+        self._drive_state.update(new_state)
 
     def setup_threads(self):
         self._thread_pool = QThreadPool.globalInstance()
