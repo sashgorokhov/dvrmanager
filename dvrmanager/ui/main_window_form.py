@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file '.\dvrmanager\ui\window.ui'
+# Form implementation generated from reading ui file '.\dvrmanager\ui\main_window_form.ui'
 #
 # Created by: PyQt6 UI code generator 6.1.0
 #
@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(560, 461)
+        MainWindow.resize(560, 520)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -67,6 +67,10 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.log_list_widget.sizePolicy().hasHeightForWidth())
         self.log_list_widget.setSizePolicy(sizePolicy)
+        self.log_list_widget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        self.log_list_widget.setProperty("isWrapping", True)
+        self.log_list_widget.setWordWrap(True)
+        self.log_list_widget.setSelectionRectVisible(False)
         self.log_list_widget.setObjectName("log_list_widget")
         self.verticalLayout.addWidget(self.log_list_widget)
         self.horizontalLayout.addWidget(self.log_group_box)
